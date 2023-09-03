@@ -132,3 +132,21 @@ export function filterByDay<T>(
 		return itemDate === inputDate
 	})
 }
+
+export const getRange = (start: number, end: number): number[] => {
+	const length = end - start + ONE_VALUE
+	/*
+  	Create an array of certain length and set the elements within it from
+    start value to end value.
+  */
+	return Array.from({ length }, (_, index) => index + start)
+}
+
+export const simpleDayjsCalendar = {
+	sameDay: '[Today]', // The same day ( Today )
+	nextDay: '[Tomorrow]', // The next day ( Tomorrow )
+	nextWeek: '[Next] dddd', // The next week ( Next Sunday  )
+	lastDay: '[Yesterday]', // The day before ( Yesterday  )
+	lastWeek: '[Last] dddd', // Last week ( Last Monday  )
+	sameElse: 'DD/MM/YYYY' // Everything else ( 17/10/2011 )
+}

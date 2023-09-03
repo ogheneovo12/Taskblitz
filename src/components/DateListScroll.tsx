@@ -1,3 +1,4 @@
+import EditIcon from '@/assets/icons/edit.svg'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -37,10 +38,14 @@ const DateListItem = forwardRef<
 
 export function DateListScroll({
 	startDate,
-	onItemClick
+	onItemClick,
+	showEditButton,
+	onEditButtonClick
 }: {
 	startDate: Date
 	onItemClick?: (value: Date) => void
+	showEditButton?: boolean
+	onEditButtonClick?: () => void
 }): ReactElement {
 	const lastDayOfMonth = useMemo(
 		() => getLastDayOfMonth(new Date(startDate)),
@@ -57,9 +62,17 @@ export function DateListScroll({
 
 	return (
 		<>
-			<h4 className='mb-4 text-base font-semibold text-gray-900'>
-				{getMonthAndYearFromDate(startDate)}
-			</h4>
+			<div className='mb-4 flex items-center  space-x-2'>
+				<h4 className='text-base font-semibold text-gray-900'>
+					{getMonthAndYearFromDate(startDate)}
+				</h4>
+				{showEditButton ? (
+					<button type='button' className='text-xl' onClick={onEditButtonClick}>
+						<EditIcon />
+					</button>
+				) : null}
+			</div>
+
 			<ScrollArea.Root className=' min-h-[100px] w-full overflow-hidden bg-white'>
 				<ScrollArea.Viewport className='horizontal-scroll h-full  w-full'>
 					<div className='flex items-center space-x-4'>

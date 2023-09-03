@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import '@/styles/checkbox.scss'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateTask } from 'api/todos.api'
 import cx from 'classnames'
@@ -6,7 +8,7 @@ import calendar from 'dayjs/plugin/calendar'
 import type { ReactElement } from 'react'
 import toast from 'react-hot-toast'
 import type { ITask } from 'types'
-import { defaultAction, getErrorMessage } from 'utils'
+import { defaultAction, getErrorMessage, simpleDayjsCalendar } from 'utils'
 import Spinner from './Spinner'
 
 dayjs.extend(calendar)
@@ -45,8 +47,6 @@ export default function TodoItem({
 		}
 	}
 
-	const humanizedDate = dayjs(created_at).calendar().split(' ')
-
 	return (
 		<div
 			onClick={onClick}
@@ -63,12 +63,16 @@ export default function TodoItem({
 				{isLoading ? (
 					<Spinner />
 				) : (
-					<input
-						checked={completed}
-						onChange={onHandleUpdate}
-						type='checkbox'
-						className='mr-3'
-					/>
+					<div className='custom-checkbox'>
+						<input
+							checked={completed}
+							onChange={onHandleUpdate}
+							type='checkbox'
+							className='mr-3'
+							id={id}
+						/>
+						<label htmlFor={id} />
+					</div>
 				)}
 				<div>
 					<h3
@@ -92,11 +96,7 @@ export default function TodoItem({
 			</div>
 			<div>
 				<p className='text-sm text-gray-900'>
-					<span>{humanizedDate[0] ?? ''}</span>
-					{'  '}
-					<span className='hidden sm:inline-block'>
-						{humanizedDate[1] ?? ''} {humanizedDate[2] ?? ''}
-					</span>
+					{dayjs(created_at).calendar(null, simpleDayjsCalendar)}
 				</p>
 			</div>
 		</div>

@@ -1,3 +1,4 @@
+import MicrophoneIcon from '@/assets/icons/microphone.svg'
 import PlusIcon from '@/assets/icons/plus.svg'
 import '@/styles/calendar.scss'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,23 +10,20 @@ import TodoItem from 'components/TodoItem'
 import TodoPreview from 'components/TodoPreview'
 import { usePaginate } from 'components/hooks/usePaginate'
 import { useMemo, useState, type ReactElement } from 'react'
+import BottomDrawer from 'react-bottom-drawer'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import { toast } from 'react-hot-toast'
 import type { ITask } from 'types'
-import {
-	DEFAULT_PAGE_RANGE_DISPLAY,
-	HALF,
-	getErrorMessage,
-	useMediaQuery
-} from 'utils'
+import { ONE_VALUE, getErrorMessage, useMediaQuery } from 'utils'
 import DateList from '../components/DateListScroll'
 
-const LIMIT = 10
+const DESKTOP_LIMIT = 10
+const MOBILE_LIMIT = 25
 
 export default function TodosPage(): ReactElement {
 	const [panelView, setPanelView] = useState<string>('default')
-	const limit = useMemo(() => LIMIT, [])
+
 	const [filterOptions, setFilterOptions] = useState<
 		Record<string, number | string | null | undefined>
 	>({
@@ -37,7 +35,10 @@ export default function TodosPage(): ReactElement {
 	const [selectedTask, setSelectedTask] = useState<ITask | null>(null)
 	const queryClient = useQueryClient()
 	const isDesktopOrBigger = useMediaQuery(`(min-width:1024px)`)
-
+	const limit = useMemo(
+		() => (isDesktopOrBigger ? DESKTOP_LIMIT : MOBILE_LIMIT),
+		[isDesktopOrBigger]
+	)
 	const {
 		isLoading,
 		isError,
@@ -53,12 +54,18 @@ export default function TodosPage(): ReactElement {
 			})
 	)
 
+	const onCloseTaskForm = (): void => {
+		if (selectedTask) setSelectedTask(null)
+		setPanelView('default')
+	}
+
 	const { isLoading: isAddingTask, mutate: addNewTask } = useMutation({
 		mutationFn: addTask,
 		onSuccess: () => {
 			void queryClient.invalidateQueries({
 				queryKey: ['todos']
 			})
+			onCloseTaskForm()
 		},
 		onError: addError => {
 			toast.error(getErrorMessage(addError) ?? '')
@@ -69,6 +76,7 @@ export default function TodosPage(): ReactElement {
 		mutationFn: updateTask,
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: ['todos'] })
+			onCloseTaskForm()
 		},
 		onError: addError => {
 			toast.error(getErrorMessage(addError) ?? '')
@@ -93,34 +101,32 @@ export default function TodosPage(): ReactElement {
 		}
 	}
 
-	const onCloseTaskForm = (): void => {
-		if (selectedTask) setSelectedTask(null)
-		setPanelView('default')
-	}
-
 	const onClosePreview = (): void => {
 		if (selectedTask) setSelectedTask(null)
 		setPanelView('default')
 	}
+
+	const calendar = (
+		<Calendar
+			value={
+				filterOptions.created_at ? new Date(filterOptions.created_at) : null
+			}
+			className='!w-full !max-w-[394px] rounded-lg !border-gray-100 px-6 py-5 !font-sans shadow-calendar'
+			prev2AriaLabel={undefined}
+			next2AriaLabel={' '}
+			showNeighboringMonth={false}
+			onChange={(date): void => {
+				const newDate = (date as Date).toISOString()
+				setFilterOptions(previous => ({
+					...previous,
+					created_at: newDate === previous.created_at ? null : newDate // account for unselection
+				}))
+			}}
+		/>
+	)
 	const panelOptions: Record<string, React.ReactNode> = {
-		default: (
-			<Calendar
-				value={
-					filterOptions.created_at ? new Date(filterOptions.created_at) : null
-				}
-				className='!w-full !max-w-[394px] rounded-lg !border-gray-100 px-6 py-5 !font-sans shadow-calendar'
-				prev2AriaLabel={undefined}
-				next2AriaLabel={' '}
-				showNeighboringMonth={false}
-				onChange={(date): void => {
-					const newDate = (date as Date).toISOString()
-					setFilterOptions(previous => ({
-						...previous,
-						created_at: newDate === previous.created_at ? null : newDate // account for unselection
-					}))
-				}}
-			/>
-		),
+		default: calendar,
+		mobile_calendar: calendar,
 		addTodo: (
 			<TodoForm
 				title='Add Todo'
@@ -157,7 +163,7 @@ export default function TodosPage(): ReactElement {
 	const filterApplied = filterOptions.created_at ?? filterOptions.completed
 
 	return (
-		<section className='section'>
+		<section className='section pb-32 md:pb-0'>
 			<div className=' container'>
 				<div className='mb-8 flex items-center  justify-between'>
 					<hgroup>
@@ -178,6 +184,8 @@ export default function TodosPage(): ReactElement {
 					<div className='w-full  lg:w-[70%] lg:max-w-[826px] lg:px-0 lg:pr-4'>
 						<div className='mb-8 '>
 							<DateList
+								showEditButton={!isDesktopOrBigger}
+								onEditButtonClick={(): void => setPanelView('mobile_calendar')}
 								onItemClick={(date): void => {
 									const newDate = date.toISOString()
 									setFilterOptions(previous => ({
@@ -215,7 +223,8 @@ export default function TodosPage(): ReactElement {
 									/>
 								))
 							)}
-							{!currentItems?.length && (
+							{/* Render only when item is empty and hide if it's loading or there's error */}
+							{!currentItems?.length && !(isError || isLoading) ? (
 								<IsEmpty
 									title={
 										filterApplied
@@ -228,19 +237,39 @@ export default function TodosPage(): ReactElement {
 											: 'Add a new record by simpley clicking the button on top right side.'
 									}
 								/>
-							)}
+							) : null}
 
-							{paginateUI(
-								isDesktopOrBigger ? DEFAULT_PAGE_RANGE_DISPLAY : HALF
-							)}
+							{paginateUI(isDesktopOrBigger ? ONE_VALUE : 0)}
 						</div>
 					</div>
 					{isDesktopOrBigger ? (
 						<div className='flex-shrik-0  hidden flex-grow flex-col items-center lg:flex lg:pl-5'>
 							{panelOptions[panelView]}
 						</div>
-					) : null}
+					) : (
+						<BottomDrawer
+							isVisible={panelView !== 'default'} // default is calendar and shouldn't be shown on mobile
+							onClose={(): void => {
+								// prevent closing of form if active request while opend
+								if (!isAddingTask || !isUpdatingTask) {
+									setPanelView('default')
+								}
+							}}
+						>
+							{panelOptions[panelView]}
+						</BottomDrawer>
+					)}
 				</div>
+			</div>
+			<div className='container fixed bottom-0 bg-white py-5 lg:hidden'>
+				<button
+					onClick={(): void => setPanelView('addTodo')}
+					type='button'
+					className='flex h-[48px] w-full items-center justify-between rounded-lg border border-gray-300 bg-[#F9FAFB] p-3 shadow-btn'
+				>
+					<span>Input Task</span>
+					<MicrophoneIcon />
+				</button>
 			</div>
 		</section>
 	)

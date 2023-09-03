@@ -14,9 +14,8 @@ interface properties {
 function TimePicker({
 	value,
 	onChange,
-	baseDate
-} // allowdebug
-: properties): ReactElement {
+	baseDate // allowdebug
+}: properties): ReactElement {
 	const dayjsValue = useMemo(() => dayjs(value), [value])
 	const dayjsBaseDate = useMemo(() => dayjs(baseDate), [baseDate])
 	const splitted = dayjsValue.format('hh:mm a').split(' ')
@@ -78,13 +77,13 @@ function TimePicker({
 
 	return (
 		<div className='btn btn-ghost flex max-w-[115px] items-center space-x-1 px-1 text-sm hover:bg-transparent hover:text-gray-700'>
-			<span className='flex-shrink-0'>
+			<span className='flex-shrink-0 text-gray-500'>
 				<ClockIcon />
 			</span>
 
 			<TimeField
 				input={
-					<input className='border-none p-0 text-sm focus:border-none focus:outline-none focus:ring-0' />
+					<input className='border-none p-0 text-sm text-gray-500 focus:border-none focus:outline-none focus:ring-0' />
 				}
 				value={splitted[0]}
 				onChange={onHandleChange}
@@ -99,7 +98,7 @@ function TimePicker({
 				onValueChange={onAmorPmChange}
 				contentWidth='100px'
 				contentClassName='px-2'
-				className='flex items-center'
+				className='flex items-center text-gray-500'
 			>
 				<SelectItem value='am'>am</SelectItem>
 				<SelectItem value='pm'>pm</SelectItem>

@@ -35,24 +35,24 @@ function TodoPreview({
 	})
 
 	return (
-		<div className=' w-full max-w-[394px] rounded-lg border border-gray-100 p-6 shadow-calendar'>
+		<div className=' w-full max-w-[394px] rounded-lg p-6 lg:border lg:border-gray-100 lg:shadow-calendar'>
 			<div className='flex justify-end'>
-				<button type='button'>
+				<button onClick={onClose} type='button'>
 					{' '}
 					<Xclose />
 				</button>
 			</div>
-			<h2 className='text-foundation-grey-normal text-lg font-bold'>
+			<h2 className='text-lg font-bold text-foundation-grey-normal'>
 				{todo.title}
 			</h2>
 			<div className='my-9'>
-				<p className='text-foundation-grey-normal mb-[9px] flex items-center'>
+				<p className='mb-[9px] flex items-center text-foundation-grey-normal'>
 					<span className='mr-2 text-primary'>
 						<CalendarIcon />
 					</span>{' '}
 					{dayjs(todo.created_at).format('Do MMMM, YYYY')}
 				</p>
-				<p className='text-foundation-grey-normal flex items-center'>
+				<p className='flex items-center text-foundation-grey-normal'>
 					<span className='mr-2 text-primary'>
 						<ClockIcon />
 					</span>{' '}

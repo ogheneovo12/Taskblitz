@@ -1,7 +1,7 @@
 import Pagination from 'components/Pagination'
 import type { ReactElement } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { DEFAULT_PAGE_RANGE_DISPLAY, ONE_VALUE } from 'utils'
+import { ONE_VALUE } from 'utils'
 
 export interface IPaginateProperties<T> {
 	itemsPerPage: number
@@ -44,15 +44,13 @@ export function usePaginate<T>(properties: IPaginateProperties<T>): {
 		}
 	}
 
-	const paginateUI = (
-		pageRangeDisplayed = DEFAULT_PAGE_RANGE_DISPLAY
-	): ReactElement => (
+	const paginateUI = (siblings_count = ONE_VALUE): ReactElement => (
 		<Pagination
 			totalItems={totalItems ?? data.length}
-			pageRangeDisplayed={pageRangeDisplayed}
-			itemsPerPage={10}
+			itemsPerPage={itemsPerPage}
 			currentPage={page}
 			onPageChange={(newPage): void => handlePageClick(newPage)}
+			siblingCount={siblings_count}
 		/>
 	)
 

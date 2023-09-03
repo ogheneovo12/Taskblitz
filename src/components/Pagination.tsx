@@ -1,25 +1,29 @@
 import ArrowLeft from '@/assets/icons/arrow-left.svg'
 import ArrowRight from '@/assets/icons/arrow-right.svg'
 import cx from 'classnames'
-import type { ReactElement } from 'react'
+import { useMemo, type ReactElement } from 'react'
+import { ONE_VALUE, getRange } from 'utils'
 
 interface PaginationProperties {
 	totalItems: number
 	itemsPerPage: number
 	currentPage: number
 	onPageChange: (newPage: number) => void
-	pageRangeDisplayed: number
+	siblingCount?: number
 }
 
 const INDEX_START = 1
 const INDEX_DIVISOR = 2
+const TWICE_D = 5
+const THREE = 3
+const ELLIPSES = '...'
 
 function Pagination({
 	totalItems,
 	itemsPerPage,
 	currentPage,
 	onPageChange,
-	pageRangeDisplayed
+	siblingCount = ONE_VALUE
 }: PaginationProperties): ReactElement {
 	const totalPages = Math.ceil(totalItems / itemsPerPage)
 
@@ -29,49 +33,59 @@ function Pagination({
 		}
 	}
 
-	const renderPageNumbers = (): ReactElement[] => {
-		const pageNumbers: (number | string)[] = []
-		const numberDisplayed = Math.min(totalPages, pageRangeDisplayed)
+	const pageNumbers: (number | string)[] = useMemo(() => {
+		const totalPageNumbers = siblingCount + TWICE_D
 
-		if (totalPages <= numberDisplayed) {
-			for (let index = INDEX_START; index <= totalPages; index += INDEX_START) {
-				pageNumbers.push(index)
-			}
-		} else {
-			const halfRange = Math.floor(pageRangeDisplayed / INDEX_DIVISOR)
-			let startPage = currentPage - halfRange
-			if (startPage < INDEX_START) {
-				startPage = INDEX_START
-			}
-			let endPage = startPage + pageRangeDisplayed - INDEX_START
-			if (endPage > totalPages) {
-				endPage = totalPages
-				startPage = endPage - pageRangeDisplayed + INDEX_START
-			}
-
-			if (startPage > INDEX_START) {
-				pageNumbers.push(INDEX_START)
-				if (startPage > INDEX_DIVISOR) {
-					pageNumbers.push('...')
-				}
-			}
-
-			for (let index = startPage; index <= endPage; index += INDEX_START) {
-				pageNumbers.push(index)
-			}
-
-			if (endPage < totalPages) {
-				if (endPage < totalPages - INDEX_START) {
-					pageNumbers.push('...')
-				}
-				pageNumbers.push(totalPages)
-			}
+		/* If the page count is lower than the desired page numbers to be displayed, 
+		we provide a range spanning from page 1 to the total page count. */
+		if (totalPageNumbers >= totalPages) {
+			return getRange(ONE_VALUE, totalPages)
 		}
 
-		return pageNumbers.map(pageNumber => (
+		/*
+    Ensure the sibilings on either side are  within range 1 and totalPageCount
+    */
+		const leftSiblingIndex = Math.max(currentPage - siblingCount, ONE_VALUE)
+		const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages)
+
+		const shouldShowLeftEllipses = leftSiblingIndex > INDEX_DIVISOR
+		const shouldShowRightEllipses =
+			rightSiblingIndex < totalPages - INDEX_DIVISOR
+
+		const firstPageIndex = 1
+		const lastPageIndex = totalPages
+
+		// There are no ellipses on the left, but we should display ellipses on the right.
+		if (!shouldShowLeftEllipses && shouldShowRightEllipses) {
+			const leftItemCount = THREE + TWICE_D * siblingCount
+			const leftRange = getRange(ONE_VALUE, leftItemCount)
+			return [...leftRange, ELLIPSES, totalPages]
+		}
+
+		// We don't need to display ellipses on the right, but we should show ellipses on the left.
+		if (shouldShowLeftEllipses && !shouldShowRightEllipses) {
+			const rightItemCount = THREE + INDEX_DIVISOR * siblingCount
+			const rightRange = getRange(
+				totalPages - rightItemCount + ONE_VALUE,
+				totalPages
+			)
+			return [firstPageIndex, ELLIPSES, ...rightRange]
+		}
+
+		// Both ellipses on the left and right should be displayed.
+		if (shouldShowLeftEllipses && shouldShowRightEllipses) {
+			const middleRange = getRange(leftSiblingIndex, rightSiblingIndex)
+			return [firstPageIndex, ELLIPSES, ...middleRange, ELLIPSES, lastPageIndex]
+		}
+		return []
+	}, [currentPage, siblingCount, totalPages])
+
+	const renderPageNumbers = (): ReactElement[] =>
+		pageNumbers.map((pageNumber, index) => (
 			<button
 				type='button'
-				key={`_page_${pageNumber}`}
+				// eslint-disable-next-line react/no-array-index-key
+				key={`_page_${pageNumber}_${index}`}
 				onClick={(): void => {
 					if (typeof pageNumber === 'number') {
 						handlePageChange(pageNumber)
@@ -86,7 +100,6 @@ function Pagination({
 				{pageNumber}
 			</button>
 		))
-	}
 
 	return (
 		<div className='flex items-center justify-between'>

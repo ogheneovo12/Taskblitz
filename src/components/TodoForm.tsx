@@ -1,3 +1,4 @@
+import Bell from '@/assets/icons/bell2.svg'
 import Xclose from '@/assets/icons/x-close.svg'
 import React, { useCallback, useState, type ReactElement } from 'react'
 import type { CreateTaskPayload, ITask } from 'types'
@@ -63,18 +64,24 @@ function TodoForm({
 	return (
 		<form
 			onSubmit={onSubmit}
-			className=' w-full max-w-[394px] rounded-lg border border-gray-100 p-6 shadow-calendar'
+			className=' w-full rounded-lg p-2 md:p-6 lg:max-w-[394px] lg:border lg:border-gray-100 lg:shadow-calendar'
 		>
 			<div className='mb-4 flex items-center justify-between'>
 				<h2 className='text-lg font-semibold text-gray-900'>{title}</h2>
-				<Xclose />
+				<button type='button' onClick={onClose}>
+					<Xclose />
+				</button>
 			</div>
 			<textarea
+				// disabled rule for this line, as autofocus for this text area input is not unneccesary
+				// as upon rendering or mounting the user is expected to be focused on this form
+				// eslint-disable-next-line jsx-a11y/no-autofocus
+				autoFocus
 				value={todoTitle}
 				onChange={onTitleChange}
 				className='h-[140px] w-full rounded-lg border border-gray-300 bg-gray-50'
 			/>
-			<div className='my-4 flex  items-center justify-between'>
+			<div className='my-4 flex  max-w-[349px] items-center justify-between'>
 				<DatePicker
 					value={datePicked}
 					onValueChange={(value): void => {
@@ -93,7 +100,11 @@ function TodoForm({
 					baseDate={datePicked}
 				/>
 			</div>
-			<div className='flex space-x-3'>
+			<div className='mb-8 flex items-center text-[#667085]'>
+				<Bell />
+				<p className='text-base font-medium'>10 Minute before</p>
+			</div>
+			<div className='mx-auto flex items-center justify-center space-x-3'>
 				<button type='button' className='btn btn-ghost ' onClick={onClose}>
 					Cancel
 				</button>
