@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	body {
+		@apply font-sans text-sm;
+	}
+
+	button {
+		@apply opacity-80 disabled:cursor-not-allowed;
+	}
+}
+
+@layer components {
+	.btn {
+		@apply flex min-h-[40px] w-full  max-w-[176px] items-center justify-center rounded-lg px-4 py-[10px] text-sm font-semibold;
+	}
+
+	.btn-primary {
+		@apply border border-primary bg-primary text-white hover:border-opacity-70 hover:bg-opacity-70;
+	}
+
+	.btn-ghost {
+		@apply border border-gray-300 bg-transparent text-gray-700 hover:bg-primary hover:text-white;
+	}
+
+	.section {
+		@apply min-h-screen py-12;
+	}
+
+	.radix-popover-content {
+		@apply w-[260px] rounded bg-white p-5 
+    shadow-[0px_5px_50px_0px_rgba(0,0,0,0.10)] 
+    will-change-[transform,opacity] data-[state=open]:data-[side=bottom]:animate-slideUpAndFade 
+    data-[state=open]:data-[side=left]:animate-slideRightAndFade 
+    data-[state=open]:data-[side=right]:animate-slideLeftAndFade 
+    data-[state=open]:data-[side=top]:animate-slideDownAndFade;
+	}
+}
+
+.horizontal-scroll {
+	background-image: 
+	
+	/* Shadows */
+		linear-gradient(to right, white, white),
+		linear-gradient(to right, white, white),
+		/* Shadow covers */
+			linear-gradient(to right, rgb(0 0 0 / 25%), rgb(255 255 255 / 0%)),
+		linear-gradient(to left, rgb(0 0 0 / 25%), rgb(255 255 255 / 0%));
+	background-position:
+		left center,
+		right center,
+		left center,
+		right center;
+	background-repeat: no-repeat;
+	background-color: white;
+	background-size:
+		20px 100%,
+		20px 100%,
+		10px 100%,
+		10px 100%;
+
+	/* Opera doesn't support this in the shorthand */
+	background-attachment: local, local, scroll, scroll;
+}
